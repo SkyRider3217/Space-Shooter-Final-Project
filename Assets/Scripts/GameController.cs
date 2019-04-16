@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour
 {
     public GameObject[] hazards;
+    public GameObject boss;
     public Vector3 spawnValues;
     public int hazardCount;
     public float spawnWait;
@@ -37,7 +38,7 @@ public class GameController : MonoBehaviour
     {
         if (restart)
         {
-            if (Input.GetKeyDown (KeyCode.B))
+            if (Input.GetKeyDown (KeyCode.R))
             {
                 SceneManager.LoadScene("SpaceShooterGame_01");
             }
@@ -59,12 +60,33 @@ public class GameController : MonoBehaviour
             }
             yield return new WaitForSeconds(waveWait);
 
+            if (score >= 100)
+            {
+                SpawnBoss();
+                break;
+            }
+
             if (gameOver)
             {
-                restartText.text = "Press 'B' to Restart";
+                restartText.text = "Press 'R' to Restart";
                 restart = true;
                 break;
             }
+        }
+    }
+
+    IEnumerator SpawnBoss()
+    {
+        yield return new WaitForSeconds(startWait);
+        Vector3 spawnPosition = new Vector3(spawnValues.x, spawnValues.y, spawnValues.z);
+        Quaternion spawnRotation = Quaternion.identity;
+        Instantiate(boss, spawnPosition, spawnRotation);
+        
+
+        if (gameOver)
+        {
+            restartText.text = "Press 'R' to Restart";
+            restart = true;
         }
     }
 
@@ -77,7 +99,7 @@ public class GameController : MonoBehaviour
     void UpdateScore()
     {
         scoreText.text = "Points: " + score;
-        if (score >= 200)
+        if (score >= 1000)
         {
             winText.text = "Game created by Camille Morales";
             gameOver = true;
