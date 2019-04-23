@@ -15,20 +15,18 @@ public class PlayerController : MonoBehaviour
 
     public GameObject shot;
     public Transform shotSpawn;
+    public Transform shotSpawnR;
+    public Transform shotSpawnL;
     public float fireRate;
 
     private Rigidbody rb;
     private float nextFire;
-
-    public AudioClip musicClipOne;
-    public AudioSource musicSource;
+    private bool spreadShot;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
-
-        musicSource.clip = musicClipOne;
-        musicSource.Play();
+        spreadShot = false;
     }
 
     void Update()
@@ -37,7 +35,21 @@ public class PlayerController : MonoBehaviour
         {
             nextFire = Time.time + fireRate;
             Instantiate(shot, shotSpawn.position, shotSpawn.rotation);
+            if (spreadShot == true)
+            {
+                Instantiate(shot, shotSpawnR.position, shotSpawnR.rotation);
+                Instantiate(shot, shotSpawnL.position, shotSpawnL.rotation);
+            }
             GetComponent<AudioSource>().Play ();
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Pickup"))
+        {
+            Destroy(other.gameObject);
+            spreadShot = true;
         }
     }
 

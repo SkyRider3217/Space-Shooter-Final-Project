@@ -8,10 +8,19 @@ public class GameController : MonoBehaviour
     public GameObject[] hazards;
     public GameObject boss;
     public Vector3 spawnValues;
+    public Vector3 spawnValuesBoss;
     public int hazardCount;
     public float spawnWait;
     public float startWait;
     public float waveWait;
+    public float startBossWait;
+    public float endBossWait;
+
+    public AudioClip musicClipBackground;
+    public AudioClip musicClipBoss;
+    public AudioClip musicClipWin;
+    public AudioClip musicClipDefeat;
+    public AudioSource musicSource;
 
     public Text scoreText;
     public Text restartText;
@@ -22,8 +31,11 @@ public class GameController : MonoBehaviour
     private bool restart;
     private int score;
 
+    public bool winCondition;
+
     void Start()
     {
+        winCondition = false;
         gameOver = false;
         restart = false;
         restartText.text = "";
@@ -32,6 +44,9 @@ public class GameController : MonoBehaviour
         score = 0;
         UpdateScore();
         StartCoroutine(SpawnWaves());
+
+        musicSource.clip = musicClipBackground;
+        musicSource.Play();
     }
 
     void Update()
@@ -42,6 +57,11 @@ public class GameController : MonoBehaviour
             {
                 SceneManager.LoadScene("SpaceShooterGame_01");
             }
+        }
+
+        if (gameOver)
+        {
+            Defeat();
         }
     }
 
@@ -57,37 +77,34 @@ public class GameController : MonoBehaviour
                 Quaternion spawnRotation = Quaternion.identity;
                 Instantiate(hazard, spawnPosition, spawnRotation);
                 yield return new WaitForSeconds(spawnWait);
+
+                if (score >= 250)
+                {
+                    yield return StartCoroutine(SpawnBoss());
+                    break;
+                }
             }
             yield return new WaitForSeconds(waveWait);
 
-            if (score >= 100)
-            {
-                SpawnBoss();
-                break;
-            }
-
             if (gameOver)
             {
-                restartText.text = "Press 'R' to Restart";
-                restart = true;
                 break;
             }
         }
     }
 
-    IEnumerator SpawnBoss()
+    public IEnumerator SpawnBoss()
     {
-        yield return new WaitForSeconds(startWait);
-        Vector3 spawnPosition = new Vector3(spawnValues.x, spawnValues.y, spawnValues.z);
+        musicSource.clip = musicClipBoss;
+        musicSource.Play();
+        yield return new WaitForSeconds(startBossWait);
+
+        Vector3 spawnPosition = new Vector3(spawnValuesBoss.x, spawnValuesBoss.y, spawnValuesBoss.z);
         Quaternion spawnRotation = Quaternion.identity;
         Instantiate(boss, spawnPosition, spawnRotation);
-        
+        yield return new WaitForSeconds(endBossWait);
 
-        if (gameOver)
-        {
-            restartText.text = "Press 'R' to Restart";
-            restart = true;
-        }
+        yield return null;
     }
 
     public void AddScore(int newScoreValue)
@@ -99,16 +116,28 @@ public class GameController : MonoBehaviour
     void UpdateScore()
     {
         scoreText.text = "Points: " + score;
-        if (score >= 1000)
+        if (score >= 2000)
         {
+            winCondition = true;
+            musicSource.clip = musicClipWin;
+            musicSource.Play();
             winText.text = "Game created by Camille Morales";
             gameOver = true;
             restart = true;
         }
     }
 
+    void Defeat()
+    {
+        restartText.text = "Press 'R' to Restart";
+        restart = true;
+    }
+
     public void GameOver()
     {
+        musicSource.clip = musicClipDefeat;
+        musicSource.Play();
+
         gameOverText.text = "Game Over!";
         gameOver = true;
     }

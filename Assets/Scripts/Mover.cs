@@ -4,6 +4,7 @@ using System.Collections;
 public class Mover : MonoBehaviour
 {
     public float speed;
+    public Boundary boundary;
 
     private Rigidbody rb;
 
